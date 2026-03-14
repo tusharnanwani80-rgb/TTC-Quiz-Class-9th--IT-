@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TTC Quiz – Maths</title>
+ 
+<link href="https://fonts.googleapis.com/css2?family=Righteous&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+ 
+<style>
+:root {
+  --blue:   #4361EE;
+  --orange: #FF6B35;
+  --lime:   #C8FF00;
+  --pink:   #FF3D8A;
+  --white:  #FFFFFF;
+  --off:    #F5F4FF;
+  --dark:   #111118;
+  --grey:   #6B6B80;
+  --light:  #EDEDF7;
+  --green:  #25D366;
+}
+ 
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--off);
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent, transparent 18px,
+    rgba(67,97,238,0.045) 18px, rgba(67,97,238,0.045) 19px
+  );
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 0;
+}
+ 
+.app { width: 430px; max-width: 95vw; }
+ 
+/* ── Screens ── */
+.screen { display: none; }
+.screen.active {
+  display: block;
+  animation: popIn 0.42s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.92) translateY(18px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0); }
+}
+ 
+/* ── Card ── */
+.card {
+  background: var(--white);
+  border: 3px solid var(--dark);
+  border-radius: 24px;
+  padding: 32px 28px;
+  box-shadow: 8px 8px 0px var(--dark);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, var(--blue), var(--pink), var(--orange), var(--lime));
+}
+ 
+/* ── Logo ── */
+.logo {
+  width: 72px; height: 72px;
+  object-fit: contain;
+  border-radius: 50%;
+  border: 3px solid var(--dark);
+  box-shadow: 3px 3px 0 var(--dark);
+  margin-bottom: 14px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+ 
+/* ── Chip ── */
+.chip {
+  display: inline-block;
+  background: var(--lime);
+  color: var(--dark);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 5px 14px;
+  border-radius: 50px;
+  border: 2px solid var(--dark);
+  box-shadow: 2px 2px 0 var(--dark);
+  margin-bottom: 14px;
+}
+ 
+/* ── Type ── */
+h2 {
+  font-family: 'Righteous', cursive;
+  font-size: 28px;
+  color: var(--dark);
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+p.sub { font-size: 14px; color: var(--grey); font-weight: 500; margin-bottom: 20px; }
+ 
+/* ── Input ── */
+.input-field {
+  width: 100%;
+  padding: 13px 16px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px; font-weight: 700;
+  color: var(--dark);
+  background: var(--off);
+  border: 2.5px solid var(--dark);
+  border-radius: 14px;
+  outline: none;
+  box-shadow: 3px 3px 0 var(--dark);
+  transition: box-shadow 0.15s, transform 0.15s, border-color 0.15s;
+  margin-bottom: 18px;
+}
+.input-field:focus {
+  box-shadow: 3px 3px 0 var(--blue);
+  border-color: var(--blue);
+  transform: translate(-1px,-1px);
+}
+.input-field::placeholder { color: #aaa; font-weight: 500; }
+ 
+/* ── Buttons ── */
+.btn {
+  display: inline-block;
+  width: 100%;
+  padding: 14px 22px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px; font-weight: 800;
+  border: 2.5px solid var(--dark);
+  border-radius: 14px;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  letter-spacing: 0.3px;
+  transition: transform 0.12s, box-shadow 0.12s;
+  box-shadow: 4px 4px 0 var(--dark);
+  margin-top: 10px;
+}
+.btn:hover  { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--dark); }
+.btn:active { transform: translate(2px,2px);   box-shadow: 2px 2px 0 var(--dark); }
+ 
+.btn-blue   { background: var(--blue);   color: white; }
+.btn-lime   { background: var(--lime);   color: var(--dark); }
+.btn-pink   { background: var(--pink);   color: white; position: relative; overflow: hidden; }
+.btn-green  { background: var(--green);  color: white; }
+.btn-ghost  {
+  background: transparent; color: var(--grey);
+  border-color: var(--light); box-shadow: 4px 4px 0 var(--light);
+}
+.btn-ghost:hover { border-color: var(--dark); color: var(--dark); box-shadow: 4px 4px 0 var(--dark); }
+ 
+/* ── Info pills ── */
+.info-strip {
+  display: flex; flex-wrap: wrap;
+  justify-content: center; gap: 8px;
+  margin: 16px 0 22px;
+}
+.info-pill {
+  background: var(--off); border: 2px solid var(--dark);
+  border-radius: 50px; padding: 5px 14px;
+  font-size: 12px; font-weight: 700;
+  color: var(--dark); box-shadow: 2px 2px 0 var(--dark);
+}
+ 
+/* ── Progress ── */
+.progress-wrap { margin-bottom: 22px; }
+.progress-meta {
+  display: flex; justify-content: space-between;
+  font-size: 12px; font-weight: 800;
+  color: var(--dark); margin-bottom: 8px;
+  text-transform: uppercase; letter-spacing: 0.3px;
+}
+.progress-track {
+  height: 10px; background: var(--light);
+  border-radius: 50px; border: 2px solid var(--dark); overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--blue), var(--pink));
+  border-radius: 50px; width: 0%;
+  transition: width 0.5s cubic-bezier(.34,1.2,.64,1);
+}
+ 
+/* ── Question ── */
+.question-text {
+  font-family: 'Righteous', cursive;
+  font-size: 18px; color: var(--dark);
+  line-height: 1.5; margin-bottom: 20px;
+  min-height: 60px; text-align: left;
+}
+ 
+/* ── Options ── */
+.options-grid { display: flex; flex-direction: column; gap: 10px; text-align: left; }
+ 
+.option {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 16px;
+  background: var(--white);
+  border: 2.5px solid var(--dark); border-radius: 14px;
+  cursor: pointer; font-size: 13px; font-weight: 700; color: var(--dark);
+  box-shadow: 3px 3px 0 var(--dark);
+  transition: transform 0.12s, box-shadow 0.12s, background 0.15s, border-color 0.15s;
+  animation: slideIn 0.3s cubic-bezier(.34,1.3,.64,1) backwards;
+  line-height: 1.4;
+}
+.option:nth-child(1) { animation-delay: 0.05s; }
+.option:nth-child(2) { animation-delay: 0.10s; }
+.option:nth-child(3) { animation-delay: 0.15s; }
+.option:nth-child(4) { animation-delay: 0.20s; }
+ 
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-14px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+ 
+.option:hover {
+  transform: translate(-2px,-2px);
+  box-shadow: 5px 5px 0 var(--blue);
+  border-color: var(--blue); background: #F0F3FF;
+}
+.option-letter {
+  width: 30px; height: 30px; border-radius: 9px;
+  background: var(--off); border: 2px solid var(--dark);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800; flex-shrink: 0;
+  font-family: 'Righteous', cursive;
+  transition: background 0.15s, border-color 0.15s;
+}
+.option.correct {
+  background: #EAFFDA; border-color: #3DB838;
+  box-shadow: 3px 3px 0 #3DB838; transform: none;
+}
+.option.correct .option-letter { background: #3DB838; border-color: #3DB838; color: white; }
+.option.wrong {
+  background: #FFEAEA; border-color: var(--pink);
+  box-shadow: 3px 3px 0 var(--pink); transform: none;
+}
+.option.wrong .option-letter { background: var(--pink); border-color: var(--pink); color: white; }
+ 
+/* ── Explanation ── */
+.expl-box {
+  display: none; margin-top: 16px;
+  background: #FFFBE6; border: 2.5px solid var(--orange);
+  border-radius: 14px; padding: 13px 16px;
+  font-size: 13px; font-weight: 600; color: #6B4500;
+  text-align: left; line-height: 1.6;
+  box-shadow: 3px 3px 0 var(--orange);
+}
+.expl-box.show { display: block; animation: popIn 0.3s cubic-bezier(.34,1.3,.64,1); }
+.expl-tag {
+  font-family: 'Righteous', cursive; color: var(--orange);
+  font-size: 11px; letter-spacing: 1.5px;
+  text-transform: uppercase; display: block; margin-bottom: 4px;
+}
+ 
+/* ── Score ── */
+.score-block { margin: 10px 0 18px; }
+.score-number {
+  font-family: 'Righteous', cursive; font-size: 76px;
+  color: var(--blue); line-height: 1;
+  text-shadow: 4px 4px 0 var(--dark);
+}
+.score-denom { font-size: 20px; font-weight: 800; color: var(--grey); }
+.score-pct {
+  display: inline-block; margin-top: 6px;
+  font-size: 13px; font-weight: 800;
+  padding: 4px 16px; border-radius: 50px;
+  border: 2px solid var(--dark); box-shadow: 2px 2px 0 var(--dark);
+}
+ 
+/* ── Feedback box ── */
+.fb-box {
+  background: var(--off); border: 2.5px solid var(--dark);
+  border-radius: 16px; padding: 16px; margin: 14px 0;
+  box-shadow: 4px 4px 0 var(--dark); text-align: left;
+}
+.fb-box .fb-emoji { font-size: 28px; margin-bottom: 6px; display: block; }
+.fb-box strong {
+  font-family: 'Righteous', cursive; font-size: 18px;
+  color: var(--dark); display: block; margin-bottom: 4px;
+}
+.fb-box p { font-size: 13px; color: var(--grey); margin: 0; font-weight: 600; line-height: 1.5; }
+ 
+/* ── Divider ── */
+.divider {
+  display: flex; align-items: center; gap: 12px;
+  margin: 22px 0; color: var(--grey);
+  font-size: 11px; font-weight: 800;
+  letter-spacing: 1.5px; text-transform: uppercase;
+}
+.divider::before, .divider::after {
+  content: ''; flex: 1; height: 2px;
+  background: var(--light); border-radius: 2px;
+}
+ 
+/* ── Reviews head ── */
+.rev-head { margin-bottom: 16px; }
+.rev-head .r-emoji { font-size: 28px; margin-bottom: 8px; }
+.rev-head h3 { font-family: 'Righteous', cursive; font-size: 22px; color: var(--dark); margin-bottom: 4px; }
+.rev-head p { font-size: 12px; font-weight: 600; color: var(--grey); }
+ 
+/* ── Burst particles ── */
+.sburst {
+  position: absolute; font-size: 14px;
+  pointer-events: none;
+  animation: burstAnim 750ms forwards;
+}
+@keyframes burstAnim {
+  0%   { opacity: 1; transform: translate(0,0) scale(1.3) rotate(0deg); }
+  100% { opacity: 0; transform: translate(var(--bx),var(--by)) scale(0) rotate(180deg); }
+}
+ 
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+ 
+<div class="app">
+ 
+  <!-- ══ NAME ══ -->
+  <div id="nameScreen" class="screen active">
+    <div class="card" style="display:flex;flex-direction:column;align-items:center;">
+      <img src="https://i.ibb.co/dsBdtCwK/Ttc-logo.png" class="logo" alt="TTC">
+      <div class="chip">✦ TTC Wardha</div>
+      <h2>Hey there!<br>What's your name?</h2>
+      <p class="sub">Enter your name to start the quiz 🎯</p>
+      <input id="username" class="input-field" type="text"
+        placeholder="Your full name..." autocomplete="off">
+      <button class="btn btn-blue" onclick="startWelcome()">Continue →</button>
+    </div>
+  </div>
+ 
+  <!-- ══ WELCOME ══ -->
+  <div id="welcomeScreen" class="screen">
+    <div class="card">
+      <img src="https://i.ibb.co/dsBdtCwK/Ttc-logo.png" class="logo" alt="TTC">
+      <div class="chip">✦ You're up!</div>
+      <h2 id="welcomeText"></h2>
+      <p class="sub">Ready to prove yourself? 💪</p>
+      <div class="info-strip">
+        <div class="info-pill">📐 Maths – Polynomials</div>
+        <div class="info-pill">50 Questions</div>
+        <div class="info-pill">🏆 Scored</div>
+        <div class="info-pill">⏱ Self-paced</div>
+      </div>
+      <button class="btn btn-blue" onclick="startQuiz()">Start Quiz 🚀</button>
+    </div>
+  </div>
+ 
+  <!-- ══ QUIZ ══ -->
+  <div id="quizScreen" class="screen">
+    <div class="card">
+      <img src="https://i.ibb.co/dsBdtCwK/Ttc-logo.png" class="logo" alt="TTC">
+ 
+      <div class="progress-wrap">
+        <div class="progress-meta">
+          <span id="qCounter">Q 1 / 50</span>
+          <span id="qScore">Score: 0</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressBar"></div>
+        </div>
+      </div>
+ 
+      <p class="question-text" id="question"></p>
+      <div class="options-grid" id="options"></div>
+ 
+      <div class="expl-box" id="explBox">
+        <span class="expl-tag">💡 Explanation</span>
+        <span id="explText"></span>
+      </div>
+ 
+      <br>
+      <button id="nextBtn" class="btn btn-blue hidden" onclick="nextQuestion()">
+        Next Question →
+      </button>
+    </div>
+  </div>
+ 
+  <!-- ══ RESULT ══ -->
+  <div id="resultScreen" class="screen">
+    <div class="card">
+      <img src="https://i.ibb.co/dsBdtCwK/Ttc-logo.png" class="logo" alt="TTC">
+      <div class="chip" id="resultChip">✦ Quiz Done!</div>
+ 
+      <div class="score-block">
+        <div>
+          <span class="score-number" id="scoreNum">0</span>
+          <span class="score-denom" id="scoreDenom">/50</span>
+        </div>
+        <div class="score-pct" id="scorePct">0%</div>
+      </div>
+ 
+      <div class="fb-box">
+        <span class="fb-emoji" id="fbEmoji"></span>
+        <strong id="fbTitle"></strong>
+        <p id="fbMsg"></p>
+      </div>
+ 
+      <button class="btn btn-green"  onclick="shareWhatsApp()">📤 Share on WhatsApp</button>
+      <button id="ratingBtn" class="btn btn-pink">⭐ Rate Us on Google</button>
+      <button class="btn btn-ghost"  onclick="restartQuiz()">↺ Try Again</button>
+ 
+      <div class="divider">What others say</div>
+ 
+      <div class="rev-head">
+        <div class="r-emoji">🌟</div>
+        <h3>Loved by TTC Families</h3>
+        <p>Real reviews from students &amp; parents across Wardha</p>
+      </div>
+ 
+      <a href="https://g.page/r/CdUkswJ0ZulAEBE/review" target="_blank"
+        class="btn btn-lime" style="display:block;text-align:center;">
+        ✍️ Give Us a Review
+      </a>
+ 
+      <div style="margin-top:20px;">
+        <div class="famewall-embed"
+          data-src="https---maps-app-goo-gl-CCkEWRVgjbvHpQmLA"
+          data-format="grid"
+          style="width:100%;min-height:300px;">
+        </div>
+        <script type="text/javascript" src="https://embed.famewall.io/frame.js" defer></script>
+      </div>
+ 
+    </div>
+  </div>
+ 
+</div>
+ 
+<script>
+const subjectName = "Maths"
+const chapterName = "Polynomials & Number Systems"
+ 
+const AR_OPTS = [
+  "Both Assertion (A) and Reason (R) are true and R is the correct explanation of A.",
+  "Both Assertion (A) and Reason (R) are true but R is not the correct explanation of A.",
+  "Assertion (A) is true but Reason (R) is false.",
+  "Assertion (A) is false but Reason (R) is true."
+]
+ 
+const quizData = [
+  /* ── Q1–Q10: Degree, Coefficients, Terms ── */
+  {
+    question: "What is the degree of the zero polynomial?",
+    options: ["0","1","Any real number","Not defined"],
+    correct: "Not defined",
+    explanation: "The zero polynomial is simply 0. Since 0 can be written as 0x⁰, 0x¹, 0x², etc., its degree is not defined."
+  },
+  {
+    question: "What is the coefficient of x in the polynomial p(x) = x² - 5?",
+    options: ["1","-5","0","Not defined"],
+    correct: "0",
+    explanation: "The polynomial can be rewritten as x² + 0x - 5. Therefore, the coefficient of the x term is 0."
+  },
+  {
+    question: "How many terms are there in the simplified form of (x + 1)(x - 1)?",
+    options: ["1","2","3","4"],
+    correct: "2",
+    explanation: "Expanding gives x² - 1, which consists of exactly two terms."
+  },
+  {
+    question: "What is the degree of the polynomial p(x) = (x³ + 1)(x² - 2)?",
+    options: ["3","2","5","6"],
+    correct: "5",
+    explanation: "When multiplying the highest degree terms (x³ × x²), we add the exponents (3+2=5). The highest power is 5."
+  },
+  {
+    question: "What is the coefficient of x² in the expression (π/2)x² + x?",
+    options: ["π","π/2","1","2"],
+    correct: "π/2",
+    explanation: "The numerical value multiplied by the x² variable is π/2."
+  },
+  {
+    question: "What is the degree of the polynomial 5x⁴ - 3x⁵ + 2x - 7?",
+    options: ["4","5","1","0"],
+    correct: "5",
+    explanation: "The degree is the highest power of the variable. Here, the highest power is 5."
+  },
+  {
+    question: "How many terms are in the polynomial 4x² + 7x + 3?",
+    options: ["1","2","3","4"],
+    correct: "3",
+    explanation: "The terms separated by addition are: 4x², 7x, and 3."
+  },
+  {
+    question: "What is the coefficient of x³ in the polynomial 7 - 2x + 4x³?",
+    options: ["7","-2","4","3"],
+    correct: "4",
+    explanation: "The coefficient is the number directly in front of x³, which is 4."
+  },
+  {
+    question: "What is the degree of the constant polynomial 15?",
+    options: ["0","1","15","Not defined"],
+    correct: "0",
+    explanation: "A non-zero constant like 15 can be written as 15x⁰. Therefore, its degree is 0."
+  },
+  {
+    question: "What is the degree of the polynomial formed by x(x² - x³)?",
+    options: ["2","3","4","5"],
+    correct: "4",
+    explanation: "Expanding gives x³ - x⁴. The highest power is 4."
+  },
+ 
+  /* ── Q11–Q15: Classification by Terms ── */
+  {
+    question: "Classify the polynomial p(x) = x² + 5x + 6 based on the number of terms.",
+    options: ["Monomial","Binomial","Trinomial","Quadratic"],
+    correct: "Trinomial",
+    explanation: "It contains exactly three distinct terms separated by plus signs."
+  },
+  {
+    question: "Classify the expression 7x²y based on the number of terms.",
+    options: ["Monomial","Binomial","Trinomial","Constant"],
+    correct: "Monomial",
+    explanation: "Even though there are multiple variables, they are all multiplied together to form a single term."
+  },
+  {
+    question: "What type of polynomial is p(x) = 2x² - 2x² + 5x?",
+    options: ["Monomial","Binomial","Trinomial","Zero polynomial"],
+    correct: "Monomial",
+    explanation: "Simplifying gives 0 + 5x, which is just 5x — a single term."
+  },
+  {
+    question: "Classify the polynomial y - 4 based on the number of terms.",
+    options: ["Monomial","Binomial","Trinomial","Linear"],
+    correct: "Binomial",
+    explanation: "It has exactly two terms: y and -4."
+  },
+  {
+    question: "Classify the expression x/2 + y/3 - z.",
+    options: ["Monomial","Binomial","Trinomial","Not a polynomial"],
+    correct: "Trinomial",
+    explanation: "The expression has three distinct terms separated by addition and subtraction."
+  },
+ 
+  /* ── Q16–Q20: Classification by Degree ── */
+  {
+    question: "Classify the polynomial 3x + 5 based on its degree.",
+    options: ["Constant","Linear","Quadratic","Cubic"],
+    correct: "Linear",
+    explanation: "The highest power of x is 1, making it a linear polynomial."
+  },
+  {
+    question: "Classify the polynomial x - x³ based on its degree.",
+    options: ["Linear","Quadratic","Cubic","Bi-quadratic"],
+    correct: "Cubic",
+    explanation: "The highest power of the variable is 3, making it a cubic polynomial."
+  },
+  {
+    question: "What type of polynomial is p(x) = 5x²?",
+    options: ["Linear","Quadratic","Cubic","Constant"],
+    correct: "Quadratic",
+    explanation: "The highest power of x is 2, so it is a quadratic polynomial."
+  },
+  {
+    question: "Classify the polynomial formed by multiplying (x - 2)(x + 2).",
+    options: ["Linear","Quadratic","Cubic","Monomial"],
+    correct: "Quadratic",
+    explanation: "Using the identity, it expands to x² - 4. Since the highest degree is 2, it is quadratic."
+  },
+  {
+    question: "Classify the polynomial x(x² + 1) based on its degree.",
+    options: ["Linear","Quadratic","Cubic","Constant"],
+    correct: "Cubic",
+    explanation: "Expanding gives x³ + x. The highest power is 3, making it cubic."
+  },
+ 
+  /* ── Q21–Q30: Algebraic Identities ── */
+  {
+    question: "Complete the identity: (x + y)² = ______",
+    options: ["x² + y²","x² - 2xy + y²","x² + 2xy + y²","x² + y² + xy"],
+    correct: "x² + 2xy + y²",
+    explanation: "This is the standard algebraic identity for the square of a sum."
+  },
+  {
+    question: "Complete the identity: (x - y)² = ______",
+    options: ["x² - y²","x² - 2xy + y²","x² + 2xy - y²","x² + y²"],
+    correct: "x² - 2xy + y²",
+    explanation: "This is the standard algebraic identity for the square of a difference."
+  },
+  {
+    question: "Complete the identity: x² - y² = ______",
+    options: ["(x - y)²","(x + y)(x + y)","(x + y)(x - y)","x(x - y)"],
+    correct: "(x + y)(x - y)",
+    explanation: "This is the difference of two squares identity."
+  },
+  {
+    question: "Complete the identity: (x + a)(x + b) = ______",
+    options: ["x² + ab","x² + (a+b)x + ab","x² + ax + bx","x² + (a-b)x + ab"],
+    correct: "x² + (a+b)x + ab",
+    explanation: "Expanding the brackets yields x² + bx + ax + ab, which groups to x² + (a+b)x + ab."
+  },
+  {
+    question: "Complete the identity: (x + y + z)² = ______",
+    options: [
+      "x² + y² + z²",
+      "x² + y² + z² + xy + yz + zx",
+      "x² + y² + z² + 2xy + 2yz + 2zx",
+      "x² + y² + z² - 2xy - 2yz - 2zx"
+    ],
+    correct: "x² + y² + z² + 2xy + 2yz + 2zx",
+    explanation: "This is the standard identity for the square of a trinomial."
+  },
+  {
+    question: "Complete the identity: (x + y)³ = ______",
+    options: [
+      "x³ + y³",
+      "x³ + y³ + 3xy(x + y)",
+      "x³ + y³ - 3xy(x + y)",
+      "x³ + 3x²y + 3xy²"
+    ],
+    correct: "x³ + y³ + 3xy(x + y)",
+    explanation: "This is the standard algebraic identity for the cube of a binomial sum."
+  },
+  {
+    question: "Complete the identity: (x - y)³ = ______",
+    options: [
+      "x³ - y³",
+      "x³ - y³ + 3xy(x - y)",
+      "x³ - y³ - 3xy(x - y)",
+      "x³ - 3x²y - 3xy²"
+    ],
+    correct: "x³ - y³ - 3xy(x - y)",
+    explanation: "This is the standard algebraic identity for the cube of a binomial difference."
+  },
+  {
+    question: "Complete the identity: x³ + y³ = ______",
+    options: [
+      "(x + y)³",
+      "(x + y)(x² - xy + y²)",
+      "(x - y)(x² + xy + y²)",
+      "(x + y)(x² + xy + y²)"
+    ],
+    correct: "(x + y)(x² - xy + y²)",
+    explanation: "This is the sum of two cubes factorization identity."
+  },
+  {
+    question: "Complete the identity: x³ - y³ = ______",
+    options: [
+      "(x - y)³",
+      "(x + y)(x² - xy + y²)",
+      "(x - y)(x² + xy + y²)",
+      "(x - y)(x² - xy + y²)"
+    ],
+    correct: "(x - y)(x² + xy + y²)",
+    explanation: "This is the difference of two cubes factorization identity."
+  },
+  {
+    question: "If x + y + z = 0, then x³ + y³ + z³ = ______",
+    options: ["0","1","xyz","3xyz"],
+    correct: "3xyz",
+    explanation: "From the identity x³ + y³ + z³ - 3xyz = (x+y+z)(x²+y²+z²-xy-yz-zx), if (x+y+z)=0, the right side is 0, leaving x³+y³+z³ = 3xyz."
+  },
+ 
+  /* ── Q31: TTC ── */
+  {
+    question: "What is TTC?",
+    options: ["Technical Training Center","Tushar Tuition Classes","Test Time Calculation","Total Term Count"],
+    correct: "Tushar Tuition Classes",
+    explanation: "TTC stands for Tushar Tuition Classes."
+  },
+ 
+  /* ── Q32–Q36: Is it a Polynomial? ── */
+  {
+    question: "Which of the following is NOT a polynomial?",
+    options: ["x² + 5x + 6","x + 1/x","3x³ - 2","5"],
+    correct: "x + 1/x",
+    explanation: "1/x = x⁻¹. Polynomials cannot have negative exponents. (Denominator mein variable nahi aana chahiye!)"
+  },
+  {
+    question: "Is the expression √x + 3 a polynomial?",
+    options: [
+      "Yes, it is a linear polynomial",
+      "Yes, it is a binomial",
+      "No, because the variable has a fractional power",
+      "No, because it has a constant term"
+    ],
+    correct: "No, because the variable has a fractional power",
+    explanation: "√x = x^(1/2). Polynomials must have whole number (non-negative integer) exponents."
+  },
+  {
+    question: "Which of the following IS a polynomial?",
+    options: ["x² + √2 x + 5","x³ + 3/x","√y + 4","y² - y⁻¹"],
+    correct: "x² + √2 x + 5",
+    explanation: "Coefficients can be irrational numbers like √2. As long as the variable's exponents are whole numbers, it is a polynomial."
+  },
+  {
+    question: "Is the number 7 considered a polynomial?",
+    options: [
+      "Yes, a constant polynomial",
+      "No, it has no variables",
+      "Yes, a linear polynomial",
+      "No, it is an integer"
+    ],
+    correct: "Yes, a constant polynomial",
+    explanation: "A real number is considered a constant polynomial with a degree of 0."
+  },
+  {
+    question: "Which of the following expressions is a polynomial in one variable?",
+    options: ["x + y + z","x² + 2x + 1","t² + √t","x² + 2/x²"],
+    correct: "x² + 2x + 1",
+    explanation: "It has only one variable (x) and all exponents are whole numbers."
+  },
+ 
+  /* ── Q37–Q40: Rational & Irrational Numbers ── */
+  {
+    question: "When a number can be expressed as p/q where p and q are integers and q ≠ 0, it is a ______?",
+    options: ["Irrational number","Rational number","Whole number","Natural number"],
+    correct: "Rational number",
+    explanation: "This is the standard definition of a rational number."
+  },
+  {
+    question: "Which of the following numbers is an irrational number?",
+    options: ["0.3333...","√16","√2","22/7"],
+    correct: "√2",
+    explanation: "√2 cannot be expressed as a simple fraction and its decimal expansion is non-terminating and non-recurring."
+  },
+  {
+    question: "What type of number is √225?",
+    options: ["Irrational","Rational","Not a real number","Prime number"],
+    correct: "Rational",
+    explanation: "√225 = 15, which can be written as 15/1, making it a rational number."
+  },
+  {
+    question: "What type of number is 0.101001000100001...?",
+    options: ["Rational","Integer","Irrational","Fraction"],
+    correct: "Irrational",
+    explanation: "The decimal expansion is non-terminating and non-recurring — the defining characteristic of an irrational number."
+  },
+ 
+  /* ── Q41–Q50: Assertion–Reason ── */
+  {
+    question: "Assertion (A): The degree of the zero polynomial is undefined.\nReason (R): The zero polynomial is represented by the constant 0.",
+    options: AR_OPTS,
+    correct: "Both Assertion (A) and Reason (R) are true but R is not the correct explanation of A.",
+    explanation: "Both are true. However, the degree is undefined because 0 can be multiplied by x to any power (0x¹, 0x², etc.), not simply because it equals the constant 0."
+  },
+  {
+    question: "Assertion (A): √3 is a polynomial of degree 0.\nReason (R): All real numbers are constant polynomials with degree 0.",
+    options: AR_OPTS,
+    correct: "Both Assertion (A) and Reason (R) are true and R is the correct explanation of A.",
+    explanation: "Both are true, and the reason correctly explains why the assertion is true."
+  },
+  {
+    question: "Assertion (A): The sum of two irrational numbers is always an irrational number.\nReason (R): √2 + (-√2) = 0, and 0 is a rational number.",
+    options: AR_OPTS,
+    correct: "Assertion (A) is false but Reason (R) is true.",
+    explanation: "The assertion is false — as proven by the reason itself. The reason is true."
+  },
+  {
+    question: "Assertion (A): 1/x is not a polynomial.\nReason (R): In a polynomial, the exponent of the variable must be a whole number, and here the exponent is -1.",
+    options: AR_OPTS,
+    correct: "Both Assertion (A) and Reason (R) are true and R is the correct explanation of A.",
+    explanation: "Both are true and the reason perfectly explains the assertion."
+  },
+  {
+    question: "Assertion (A): Vertically opposite angles are always equal.\nReason (R): If two adjacent angles form a linear pair, their sum is 180 degrees.",
+    options: AR_OPTS,
+    correct: "Both Assertion (A) and Reason (R) are true but R is not the correct explanation of A.",
+    explanation: "Both geometry statements are true, but the linear pair axiom is not the direct explanation for vertically opposite angles being equal."
+  },
+  {
+    question: "Assertion (A): The diagonals of a parallelogram bisect each other.\nReason (R): A quadrilateral is a parallelogram if its adjacent sides are parallel.",
+    options: AR_OPTS,
+    correct: "Assertion (A) is true but Reason (R) is false.",
+    explanation: "Assertion (A) is true but Reason (R) is false. Opposite sides (not adjacent sides) being parallel defines a parallelogram."
+  },
+  {
+    question: "Assertion (A): The volume of a cylinder with radius r and height h is πr²h.\nReason (R): The volume of a uniform solid is the Area of its base multiplied by its height.",
+    options: AR_OPTS,
+    correct: "Both Assertion (A) and Reason (R) are true and R is the correct explanation of A.",
+    explanation: "Both are true. The area of the circular base (πr²) times height (h) correctly explains the formula."
+  },
+  {
+    question: "Assertion (A): 0 is a rational number.\nReason (R): 0 can be written as 0/1, where p and q are integers and q ≠ 0.",
+    options: AR_OPTS,
+    correct: "Both Assertion (A) and Reason (R) are true and R is the correct explanation of A.",
+    explanation: "Both are true and the reason provides the exact definition to prove the assertion."
+  },
+  {
+    question: "Assertion (A): The rationalization factor of 1/(√3 - √2) is (√3 + √2).\nReason (R): The algebraic identity (a - b)(a + b) = a² - b² is used to eliminate square roots from the denominator.",
+    options: AR_OPTS,
+    correct: "Both Assertion (A) and Reason (R) are true and R is the correct explanation of A.",
+    explanation: "Both are true. Using the difference of squares identity is exactly why we use the conjugate as the rationalization factor."
+  },
+  {
+    question: "Assertion (A): Every integer is a rational number.\nReason (R): Every integer m can be expressed as m/1 (e.g., 4 can be written as 4/1).",
+    options: AR_OPTS,
+    correct: "Both Assertion (A) and Reason (R) are true and R is the correct explanation of A.",
+    explanation: "Both are true. Dividing by 1 satisfies the p/q definition, correctly explaining the assertion."
+  }
+]
+ 
+let username = localStorage.getItem("ttc_name") || ""
+let questions = [], index = 0, score = 0
+const letters = ["A","B","C","D"]
+ 
+if (username) document.getElementById("username").value = username
+ 
+document.getElementById("username").addEventListener("keydown", e => {
+  if (e.key === "Enter") startWelcome()
+})
+ 
+function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5) }
+ 
+function show(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"))
+  const el = document.getElementById(id)
+  el.classList.remove("active")
+  void el.offsetWidth
+  el.classList.add("active")
+}
+ 
+function startWelcome() {
+  username = document.getElementById("username").value.trim()
+  if (!username) {
+    const inp = document.getElementById("username")
+    inp.style.borderColor = "var(--pink)"
+    inp.style.boxShadow = "3px 3px 0 var(--pink)"
+    inp.placeholder = "Please enter your name! 👆"
+    inp.focus()
+    return
+  }
+  localStorage.setItem("ttc_name", username)
+  document.getElementById("welcomeText").innerText = "Let's go, " + username + "!"
+  show("welcomeScreen")
+}
+ 
+function startQuiz() {
+  questions = shuffle(quizData)
+  index = 0; score = 0
+  show("quizScreen")
+  loadQuestion()
+}
+ 
+function loadQuestion() {
+  const q = questions[index]
+  /* For AR questions keep options in fixed order; for others shuffle */
+  const isAR = q.options === AR_OPTS || (q.options.length === 4 && q.options[0].startsWith("Both Assertion"))
+  const opts = isAR ? [...q.options] : shuffle([...q.options])
+ 
+  document.getElementById("qCounter").innerText = `Q ${index+1} / ${questions.length}`
+  document.getElementById("qScore").innerText = `Score: ${score}`
+  document.getElementById("progressBar").style.width = ((index / questions.length) * 100) + "%"
+  document.getElementById("question").innerText = q.question
+ 
+  const container = document.getElementById("options")
+  container.innerHTML = ""
+  opts.forEach((opt, i) => {
+    const div = document.createElement("div")
+    div.className = "option"
+    div.innerHTML = `<span class="option-letter">${letters[i]}</span><span class="opt-text">${opt}</span>`
+    div.onclick = () => selectOption(div, opt, q)
+    container.appendChild(div)
+  })
+ 
+  document.getElementById("explBox").classList.remove("show")
+  document.getElementById("explText").innerText = ""
+  document.getElementById("nextBtn").classList.add("hidden")
+}
+ 
+function selectOption(el, opt, q) {
+  document.querySelectorAll(".option").forEach(o => o.onclick = null)
+ 
+  if (opt === q.correct) {
+    el.classList.add("correct")
+    score++
+    confetti({
+      particleCount: 100, spread: 70, origin: { y: 0.55 },
+      colors: ["#4361EE","#C8FF00","#FF3D8A","#FF6B35","#ffffff"]
+    })
+  } else {
+    el.classList.add("wrong")
+    document.querySelectorAll(".option").forEach(o => {
+      if (o.querySelector(".opt-text")?.innerText.trim() === q.correct) o.classList.add("correct")
+    })
+  }
+ 
+  document.getElementById("explText").innerText = q.explanation
+  document.getElementById("explBox").classList.add("show")
+  document.getElementById("qScore").innerText = `Score: ${score}`
+  document.getElementById("nextBtn").classList.remove("hidden")
+}
+ 
+function nextQuestion() {
+  index++
+  if (index >= questions.length) { showResult(); return }
+  loadQuestion()
+}
+ 
+function showResult() {
+  show("resultScreen")
+  const total = questions.length
+  const pct = Math.round((score / total) * 100)
+ 
+  document.getElementById("scoreNum").innerText = score
+  document.getElementById("scoreDenom").innerText = `/${total}`
+  document.getElementById("scorePct").innerText = pct + "%"
+ 
+  let emoji, title, msg, chipText, pctBg
+ 
+  if (pct >= 90) {
+    emoji = "🔥"; title = "Absolutely Smashed It!"; pctBg = "#EAFFDA"
+    msg = "Perfect! Outstanding performance, " + username + ". Top of the class!"
+    chipText = "✦ Outstanding"
+  } else if (pct >= 75) {
+    emoji = "💪"; title = "Really Well Done!"; pctBg = "#E0F0FF"
+    msg = "Strong performance, " + username + "! A little more practice and you'll be perfect."
+    chipText = "✦ Well Done"
+  } else if (pct >= 50) {
+    emoji = "📚"; title = "Good Effort!"; pctBg = "#FFF8DC"
+    msg = "You're on the right track, " + username + ". Keep revising and you'll ace it!"
+    chipText = "✦ Keep Going"
+  } else {
+    emoji = "🧐"; title = "Time to Revise!"; pctBg = "#FFEAEA"
+    msg = "Don't worry, " + username + " — go through the chapters once more and try again!"
+    chipText = "✦ Try Again"
+  }
+ 
+  document.getElementById("fbEmoji").innerText = emoji
+  document.getElementById("fbTitle").innerText = title
+  document.getElementById("fbMsg").innerText = msg
+  document.getElementById("resultChip").innerText = chipText
+  document.getElementById("scorePct").style.background = pctBg
+ 
+  confetti({
+    particleCount: 180, spread: 110, origin: { y: 0.45 },
+    colors: ["#4361EE","#C8FF00","#FF3D8A","#FF6B35","#ffffff"]
+  })
+}
+ 
+function shareWhatsApp() {
+  const msg =
+`🎓 *TTC Quiz Result*
+ 
+👤 *Student:* ${username}
+📘 *Subject:* ${subjectName}
+📖 *Chapter:* ${chapterName}
+🏆 *Score:* ${score}/${questions.length}
+ 
+_Tushar Tuition Classes, Wardha_ 📚`
+  window.open("https://wa.me/?text=" + encodeURIComponent(msg))
+}
+ 
+function restartQuiz() { location.reload() }
+ 
+document.getElementById("ratingBtn").addEventListener("click", function () {
+  for (let i = 0; i < 16; i++) {
+    const s = document.createElement("span")
+    s.className = "sburst"
+    s.innerText = ["★","✦","●","▲"][Math.floor(Math.random()*4)]
+    s.style.color = ["#C8FF00","#FF6B35","#4361EE","#FF3D8A"][Math.floor(Math.random()*4)]
+    s.style.setProperty("--bx", (Math.random()*160-80)+"px")
+    s.style.setProperty("--by", (Math.random()*-150)+"px")
+    s.style.left = (35 + Math.random()*30) + "%"
+    s.style.top = "50%"
+    this.appendChild(s)
+    setTimeout(() => s.remove(), 750)
+  }
+  setTimeout(() => window.open("https://g.page/r/CdUkswJ0ZulAEBE/review"), 320)
+})
+</script>
+ 
+</body>
+</html>
